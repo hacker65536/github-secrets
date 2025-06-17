@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # GitHub Repository Secrets設定スクリプト
-# 使用方法: ./set_github_secrets.sh <repository> <secret_name> <secret_value>
+# 使用方法: ./github_secrets.sh <repository> <secret_name> <secret_value>
 
 set -euo pipefail
 
@@ -42,7 +42,7 @@ ${BLUE}GitHub Repository Secrets設定ツール${NC}
 
 オプション:
   -h, --help     このヘルプを表示
-  -f, --file     秘密鍵をファイルから読み込み
+  -f, --file     シークレットをファイルから読み込み
   -l, --list     リポジトリのシークレット一覧を表示
 
 secrets.txtファイル形式 (key=value):
@@ -107,10 +107,6 @@ get_current_repository() {
 
 is_repository_format() {
     [[ "$1" =~ ^[^/]+/[^/]+$ ]]
-}
-
-is_option() {
-    [[ "$1" =~ ^-[fl]$|^--(file|list)$ ]]
 }
 
 parse_arguments() {
@@ -198,13 +194,15 @@ set_secrets_from_file() {
     echo "ファイルからシークレットを読み込み中: $secrets_file"
     
     local count=0
+    local failed=0
     while IFS='=' read -r key value || [[ -n "$key" ]]; do
         # 空行とコメント行をスキップ
         [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
         
-        # 前後の空白を削除
+        # キーの前後の空白を削除、値は先頭・末尾の空白のみ削除
         key=$(echo "$key" | xargs)
-        value=$(echo "$value" | xargs)
+        value="${value#"${value%%[![:space:]]*}"}" # 先頭の空白を削除
+        value="${value%"${value##*[![:space:]]}"}" # 末尾の空白を削除
         
         [[ -z "$key" || -z "$value" ]] && continue
         
@@ -213,10 +211,14 @@ set_secrets_from_file() {
             success "  ✓ $key"
             ((count++))
         else
-            error "  ✗ $key の設定に失敗"
+            warning "  ✗ $key の設定に失敗しました"
+            ((failed++))
         fi
     done < "$secrets_file"
 
+    if [[ $failed -gt 0 ]]; then
+        warning "$failed 個のシークレット設定に失敗しました"
+    fi
     success "$count 個のシークレットを設定しました"
 }
 
