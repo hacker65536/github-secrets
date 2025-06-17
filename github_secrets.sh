@@ -193,33 +193,12 @@ set_secrets_from_file() {
 
     echo "ファイルからシークレットを読み込み中: $secrets_file"
     
-    local count=0
-    local failed=0
-    while IFS='=' read -r key value || [[ -n "$key" ]]; do
-        # 空行とコメント行をスキップ
-        [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
-        
-        # キーの前後の空白を削除、値は先頭・末尾の空白のみ削除
-        key=$(echo "$key" | xargs)
-        value="${value#"${value%%[![:space:]]*}"}" # 先頭の空白を削除
-        value="${value%"${value##*[![:space:]]}"}" # 末尾の空白を削除
-        
-        [[ -z "$key" || -z "$value" ]] && continue
-        
-        echo "  設定中: $key"
-        if echo "$value" | gh secret set "$key" --repo "$repo"; then
-            success "  ✓ $key"
-            ((count++))
-        else
-            warning "  ✗ $key の設定に失敗しました"
-            ((failed++))
-        fi
-    done < "$secrets_file"
-
-    if [[ $failed -gt 0 ]]; then
-        warning "$failed 個のシークレット設定に失敗しました"
+    # GitHub CLIの-fオプションを使用してファイルから直接設定
+    if gh secret set -f "$secrets_file" --repo "$repo"; then
+        success "全てのシークレットを設定しました"
+    else
+        error "シークレットの設定に失敗しました"
     fi
-    success "$count 個のシークレットを設定しました"
 }
 
 list_secrets() {
