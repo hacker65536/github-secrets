@@ -23,33 +23,56 @@ GitHubリポジトリのActions Secretsを簡単に設定するためのコマ�
 ## 使用方法
 
 ### 1. 単一のシークレット設定
+
+**リポジトリ指定あり：**
 ```bash
-./set_github_secrets.sh owner/repository SECRET_NAME "secret_value"
+./github_secrets.sh owner/repository SECRET_NAME "secret_value"
+```
+
+**現在のリポジトリを使用：**
+```bash
+./github_secrets.sh SECRET_NAME "secret_value"
 ```
 
 例：
 ```bash
-./set_github_secrets.sh myorg/my-repo AWS_ACCESS_KEY_ID "AKIAIOSFODNN7EXAMPLE"
+./github_secrets.sh myorg/my-repo AWS_ACCESS_KEY_ID "AKIAIOSFODNN7EXAMPLE"
+./github_secrets.sh AWS_ACCESS_KEY_ID "AKIAIOSFODNN7EXAMPLE"  # 現在のリポジトリを使用
 ```
 
 ### 2. ファイルから複数のシークレットを一括設定
+
+**リポジトリ指定あり：**
 ```bash
-./set_github_secrets.sh owner/repository -f secrets.txt
+./github_secrets.sh owner/repository -f secrets.txt
+```
+
+**現在のリポジトリを使用：**
+```bash
+./github_secrets.sh -f secrets.txt
 ```
 
 例：
 ```bash
-./set_github_secrets.sh myorg/my-repo -f secrets_sample.txt
+./github_secrets.sh myorg/my-repo -f secrets.txt
+./github_secrets.sh -f secrets.txt  # 現在のリポジトリを使用
 ```
 
 ### 3. 現在のシークレット一覧表示
+
+**リポジトリ指定あり：**
 ```bash
-./set_github_secrets.sh owner/repository -l
+./github_secrets.sh owner/repository -l
+```
+
+**現在のリポジトリを使用：**
+```bash
+./github_secrets.sh -l
 ```
 
 ### 4. ヘルプ表示
 ```bash
-./set_github_secrets.sh -h
+./github_secrets.sh -h
 ```
 
 ## シークレットファイル形式
@@ -71,8 +94,12 @@ DATABASE_URL=postgresql://user:pass@localhost/db
 
 1. **AWS認証情報の設定**
    ```bash
-   ./set_github_secrets.sh myorg/my-app AWS_ACCESS_KEY_ID "AKIA..."
-   ./set_github_secrets.sh myorg/my-app AWS_SECRET_ACCESS_KEY "wJal..."
+   ./github_secrets.sh myorg/my-app AWS_ACCESS_KEY_ID "AKIA..."
+   ./github_secrets.sh myorg/my-app AWS_SECRET_ACCESS_KEY "wJal..."
+   
+   # 現在のリポジトリを使用する場合
+   ./github_secrets.sh AWS_ACCESS_KEY_ID "AKIA..."
+   ./github_secrets.sh AWS_SECRET_ACCESS_KEY "wJal..."
    ```
 
 2. **複数シークレットの一括設定**
@@ -84,13 +111,19 @@ DATABASE_URL=postgresql://user:pass@localhost/db
    DATABASE_URL=postgresql://user:pass@localhost/db
    EOF
    
-   # 一括設定
-   ./set_github_secrets.sh myorg/my-app -f secrets.txt
+   # 一括設定（リポジトリ指定）
+   ./github_secrets.sh myorg/my-app -f secrets.txt
+   
+   # 現在のリポジトリを使用する場合
+   ./github_secrets.sh -f secrets.txt
    ```
 
 3. **設定されたシークレットの確認**
    ```bash
-   ./set_github_secrets.sh myorg/my-app -l
+   ./github_secrets.sh myorg/my-app -l
+   
+   # 現在のリポジトリを使用する場合
+   ./github_secrets.sh -l
    ```
 
 ## 機能
@@ -98,6 +131,7 @@ DATABASE_URL=postgresql://user:pass@localhost/db
 - ✅ 単一シークレットの設定
 - ✅ ファイルからの一括設定
 - ✅ 設定済みシークレットの一覧表示
+- ✅ 現在のリポジトリを自動取得（リポジトリ名省略時）
 - ✅ エラーハンドリング
 - ✅ カラー出力
 - ✅ 日本語メッセージ
